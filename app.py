@@ -155,7 +155,7 @@ st.markdown("""
 DATA_PATH = "wfp_food_prices_phl (main).csv"
 EXOG_PATH = "sarimax_final_training_data_complete_updated.csv"
 JSON_PATH = "dashboard_data.json"
-MODELS_DIR = ""
+MODELS_DIR = "models"
 
 LINEAR_TREND_COLS = ['GWPI_Index', 'YoY_Inflation_Rate', 'Brent_Crude_USD', 'USGC_Diesel_USD']
 EXOG_COLS = [
@@ -330,7 +330,7 @@ def main():
     # ==========================================
     with tab1:
         if not model_loaded:
-            st.warning("⚠️ Model not found. Displaying historical data only.")
+            st.warning(f"⚠️ Model not found at `{model_path}`. Showing history only.")
             st.line_chart(y_hist)
         else:
             # Run Forecast
