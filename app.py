@@ -4,7 +4,6 @@ import numpy as np
 import joblib
 import json
 import plotly.graph_objects as go
-import plotly.express as px
 from sklearn.linear_model import LinearRegression
 import os
 
@@ -46,6 +45,10 @@ st.markdown("""
         padding: 20px;
         text-align: center;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
         transition: transform 0.2s ease-in-out;
     }
     .metric-container:hover {
@@ -75,22 +78,37 @@ st.markdown("""
         color: #ff6b6b; 
         background-color: rgba(255, 107, 107, 0.1); 
         border: 1px solid #ff6b6b; 
-        padding: 8px 12px; 
+        padding: 10px; 
         border-radius: 6px; 
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
     }
     .risk-moderate { 
         color: #feca57; 
         background-color: rgba(254, 202, 87, 0.1); 
         border: 1px solid #feca57; 
-        padding: 8px 12px; 
+        padding: 10px; 
         border-radius: 6px; 
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
     }
     .risk-low { 
         color: #1dd1a1; 
         background-color: rgba(29, 209, 161, 0.1); 
         border: 1px solid #1dd1a1; 
-        padding: 8px 12px; 
+        padding: 10px; 
         border-radius: 6px; 
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
     }
     
     /* 5. Insight/Interpretation Boxes */
@@ -153,9 +171,12 @@ st.markdown("""
 # 2. CONSTANTS & SETUP
 # ==========================================
 DATA_PATH = "wfp_food_prices_phl (main).csv"
-EXOG_PATH = "sarimax_final_training_data_complete_updated.csv"
+EXOG_PATH = "sarimax_final_training_data_complete_updated.csv" # Ensure this file exists!
 JSON_PATH = "dashboard_data.json"
-MODELS_DIR = "models"
+
+# CORRECT PATH SETUP
+# This works for both Windows and Linux (GitHub)
+MODELS_DIR = "models" 
 
 LINEAR_TREND_COLS = ['GWPI_Index', 'YoY_Inflation_Rate', 'Brent_Crude_USD', 'USGC_Diesel_USD']
 EXOG_COLS = [
@@ -185,6 +206,14 @@ COMMODITIES = [
 @st.cache_data
 def load_static_data():
     try:
+        # Check if files exist before reading
+        if not os.path.exists(DATA_PATH):
+            st.error(f"❌ Missing file: {DATA_PATH}")
+            return None, None, None
+        if not os.path.exists(EXOG_PATH):
+            st.error(f"❌ Missing file: {EXOG_PATH}")
+            return None, None, None
+
         df_p = pd.read_csv(DATA_PATH)
         df_e = pd.read_csv(EXOG_PATH)
         
@@ -203,7 +232,7 @@ def load_static_data():
         
         return df_p, df_e, meta_data
     except Exception as e:
-        st.error(f"Critical Error: {e}")
+        st.error(f"Critical Error loading data: {e}")
         return None, None, None
 
 def get_historical_data(df_prices, df_exog, commodity, region=None):
@@ -257,11 +286,11 @@ def main():
         <div>
             <h1>Filipino Food Price Forecasting and Predictive Modeling using Time Series Regression</h1>
             <p style='color:#7f8c8d; font-size:1.1rem; margin-top:5px;'>
-                <b>System Overview: An AI-powered forecasting tool for monitoring food security. 
+                <b>System Overview:</b> An AI-powered forecasting tool for monitoring food security. 
     Select a commodity and a time horizon to generate predictive insights based on historical trends and economic indicators.
             </p>
         </div>
-        <hr style='margin: 10px 0px 20px 0px; border-top: 1px solid #eee;'>
+        <hr style='margin: 10px 0px 20px 0px; border-top: 1px solid #374151;'>
     """, unsafe_allow_html=True)
     
     df_prices, df_exog, meta_data = load_static_data()
@@ -313,30 +342,51 @@ def main():
         st.error("No data available for this selection.")
         return
 
-    # LOAD MODEL  <-- LOOK FOR THIS COMMENT
-    model_file = f"{selected_c.replace(' ', '_').replace('/', '_')}_SARIMAX_model.joblib"  # <-- DELETE THIS LINE
-    model_path = os.path.join(MODELS_DIR, model_file)
-    model_loaded = False
-    
-    if os.path.exists(model_path):
-        try:
-            model = joblib.load(model_path)
-            model_loaded = True
-        except:
-            st.error("Model file corrupted.")
-    
-    st.title("Commodity Price Forecasting App")
-
-    # 🔍 DEBUG: Check what’s inside the models folder
-    st.write("Files inside /models directory:")
-    st.write(os.listdir("models"))
-
     # ==========================================
     # TAB 1: MAIN FORECAST DASHBOARD
     # ==========================================
     with tab1:
+        # --- ROBUST MODEL LOADING START ---
+        # 1. Construct potential filenames
+        # Option A: Original format (with parentheses)
+        filename_orig = f"{selected_c.replace(' ', '_').replace('/', '_')}_SARIMAX_model.joblib"
+        
+        # Option B: Safe format (no parentheses/commas - if you renamed them)
+        safe_c = selected_c.replace(' ', '_').replace('/', '_').replace('(', '').replace(')', '').replace(',', '')
+        filename_safe = f"{safe_c}_SARIMAX_model.joblib"
+        
+        # 2. Check which file actually exists
+        model_path = None
+        if os.path.exists(os.path.join(MODELS_DIR, filename_orig)):
+            model_path = os.path.join(MODELS_DIR, filename_orig)
+        elif os.path.exists(os.path.join(MODELS_DIR, filename_safe)):
+            model_path = os.path.join(MODELS_DIR, filename_safe)
+            
+        # 3. Load the model
+        model_loaded = False
+        model = None
+        
+        if model_path:
+            try:
+                model = joblib.load(model_path)
+                model_loaded = True
+            except Exception as e:
+                st.error(f"File found but corrupted: {e}")
+        else:
+            # --- DEBUGGING DISPLAY ---
+            st.warning("⚠️ Model not found.")
+            with st.expander("🔍 Click for Troubleshooting Info", expanded=True):
+                st.markdown(f"**The app looked for these files:**\n1. `{filename_orig}`\n2. `{filename_safe}`")
+                
+                if os.path.exists(MODELS_DIR):
+                    st.write(f"📂 **Files actually inside '{MODELS_DIR}' folder:**")
+                    st.write(os.listdir(MODELS_DIR))
+                else:
+                    st.error(f"❌ Critical: The folder `{MODELS_DIR}` does not exist.")
+        # --- ROBUST MODEL LOADING END ---
+
         if not model_loaded:
-            st.warning(f"⚠️ Model not found at `{model_path}`. Showing history only.")
+            st.info("Displaying historical data only (no forecast available).")
             st.line_chart(y_hist)
         else:
             # Run Forecast
@@ -403,7 +453,7 @@ def main():
             
             with col4:
                 st.markdown(f"""
-                <div class="{risk_class}" style="text-align:center; height:100%; display:flex; flex-direction:column; justify-content:center;">
+                <div class="{risk_class}">
                     <div style="font-weight:bold; font-size:0.8rem; margin-bottom:5px;">{risk_title}</div>
                     <div style="font-weight:900; font-size:1.1rem;">{risk_msg}</div>
                 </div>
@@ -432,9 +482,10 @@ def main():
                 height=450, 
                 hovermode="x unified",
                 xaxis=dict(showgrid=False, title="Date"),
-                yaxis=dict(showgrid=True, gridcolor='#f0f0f0', title="Price (PHP)"),
+                yaxis=dict(showgrid=True, gridcolor='#374151', title="Price (PHP)"),
                 plot_bgcolor='#081112',
                 paper_bgcolor='#081112',
+                font=dict(color='#cfd8dc'),
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
             )
             st.plotly_chart(fig, use_container_width=True)
@@ -494,8 +545,10 @@ def main():
                 height=450, 
                 hovermode="x unified",
                 plot_bgcolor='#081112',
+                paper_bgcolor='#081112',
+                font=dict(color='#cfd8dc'),
                 xaxis=dict(showgrid=False),
-                yaxis=dict(showgrid=True, gridcolor='#f0f0f0')
+                yaxis=dict(showgrid=True, gridcolor='#374151')
             )
             st.plotly_chart(fig_comp, use_container_width=True)
             st.markdown('</div>', unsafe_allow_html=True)
@@ -545,8 +598,10 @@ def main():
                 title="Typical Monthly Price Cycle", 
                 margin=dict(l=20, r=20, t=40, b=20),
                 plot_bgcolor='#081112',
+                paper_bgcolor='#081112',
+                font=dict(color='#cfd8dc'),
                 xaxis=dict(showgrid=False),
-                yaxis=dict(showgrid=True, gridcolor='#f0f0f0')
+                yaxis=dict(showgrid=True, gridcolor='#374151')
             )
             st.plotly_chart(fig_season, use_container_width=True)
             st.markdown('</div>', unsafe_allow_html=True)
