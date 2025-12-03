@@ -313,14 +313,8 @@ def main():
         st.error("No data available for this selection.")
         return
 
-    # LOAD MODEL
-    # NEW CODE (Removes parentheses and commas for safety)
-    safe_c = selected_c.replace(' ', '_').replace('/', '_').replace('(', '').replace(')', '').replace(',', '')
-    model_file = f"{safe_c}_SARIMAX_model.joblib"
-    
-    # DEBUG PRINT (Check your Streamlit logs/terminal to see this)
-    print(f"Looking for file: {model_file}") 
-
+    # LOAD MODEL  <-- LOOK FOR THIS COMMENT
+    model_file = f"{selected_c.replace(' ', '_').replace('/', '_')}_SARIMAX_model.joblib"  # <-- DELETE THIS LINE
     model_path = os.path.join(MODELS_DIR, model_file)
     model_loaded = False
     
