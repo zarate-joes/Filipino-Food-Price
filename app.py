@@ -176,7 +176,7 @@ st.markdown("""
 DATA_PATH = "wfp_food_prices_phl (main).csv"
 EXOG_PATH = "sarimax_final_training_data_complete_updated.csv"
 JSON_PATH = "dashboard_data.json"
-MODELS_DIR = "models"
+MODELS_DIR = "models" 
 
 LINEAR_TREND_COLS = ['GWPI_Index', 'YoY_Inflation_Rate', 'Brent_Crude_USD', 'USGC_Diesel_USD']
 EXOG_COLS = [
@@ -276,43 +276,50 @@ def run_live_forecast(model, X_hist, steps):
         
     return forecast, conf_int, future_dates
 
+# --- IMPROVED HERO BACKGROUND FUNCTION (BloodBeacon Style) ---
 def set_header_background(image_path):
     """
-    Sets a fading background image behind the header using CSS pseudo-elements.
-    Works with both local files and URLs.
+    Sets a fading background image behind the header.
+    Handles local files (base64) and URLs.
     """
+    
+    # 1. Prepare the Image Source (Base64 or URL)
     if os.path.exists(image_path):
         with open(image_path, "rb") as f:
             data = f.read()
         encoded = base64.b64encode(data).decode()
         src = f"data:image/png;base64,{encoded}"
     else:
-        src = image_path
+        # Fallback if local file not found, use a default high-quality URL
+        # This prevents the app from breaking if the file is missing
+        if not image_path.startswith("http"):
+            st.warning(f"⚠️ Warning: Could not find local file '{image_path}'. Using default banner.")
+            src = "https://images.unsplash.com/photo-1596700877969-a1b72e519e49?q=80&w=1200&h=400&fit=crop" 
+        else:
+            src = image_path
 
-    # CSS to inject the background image into the main container
+    # 2. Inject CSS
+    # This applies the background to .stApp but limits it to the top 400px
+    # creating the "Banner/Hero" effect.
     st.markdown(
         f"""
         <style>
-        .stApp::before {{
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 400px; /* Height of the Hero section */
-            background-image: url("{src}");
-            background-size: cover;
-            background-position: center;
+        .stApp {{
+            /* Fading Gradient Overlay + Image */
+            background-image: 
+                linear-gradient(to bottom, rgba(14, 17, 23, 0.3) 0%, rgba(14, 17, 23, 1) 400px),
+                url("{src}");
+            
+            /* Positioning */
+            background-size: 100% 700px; /* Width 100%, Height 400px */
             background-repeat: no-repeat;
-            z-index: -1; /* Place behind text */
-            
-            /* Fading effect (Gradient Mask) */
-            mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 100%);
-            -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 100%);
-            
-            /* Dimming to ensure text readability */
-            opacity: 0.6;
-            filter: brightness(0.7);
+            background-position: top center;
+            background-attachment: scroll;
+        }}
+        
+        /* Adjust Header Position to sit nicely on the image */
+        .block-container {{
+            padding-top: 2rem;
         }}
         </style>
         """,
@@ -325,14 +332,14 @@ def set_header_background(image_path):
 
 def main():
     # --- SETUP HERO BACKGROUND ---
-    # URL to a high-quality food/agriculture image. 
-    # Use your own URL or local filename here.
-    BANNER_SOURCE = "banner.png"
+    # Try your local file first. 
+    # NOTE: Ensure 'main/banner.png' exists in your repo.
+    # If not found, the code above will auto-fallback to an online image.
+    BANNER_SOURCE = r"banner.png" 
     
-    # Apply the hero background
     set_header_background(BANNER_SOURCE)
 
-    # --- HEADER ---
+    # --- HERO HEADER TEXT ---
     st.markdown("""
         <div style="padding-top: 40px; padding-bottom: 20px;">
             <h1 style="color: white; text-shadow: 0px 4px 10px rgba(0,0,0,0.9); font-size: 3rem;">
@@ -394,49 +401,42 @@ def main():
         st.error("No data available for this selection.")
         return
 
+    # 2. LOAD MODEL (Robust Loading)
+    filename_orig = f"{selected_c.replace(' ', '_').replace('/', '_')}_SARIMAX_model.joblib"
+    safe_c = selected_c.replace(' ', '_').replace('/', '_').replace('(', '').replace(')', '').replace(',', '')
+    filename_safe = f"{safe_c}_SARIMAX_model.joblib"
+    
+    model_path = None
+    if os.path.exists(os.path.join(MODELS_DIR, filename_orig)):
+        model_path = os.path.join(MODELS_DIR, filename_orig)
+    elif os.path.exists(os.path.join(MODELS_DIR, filename_safe)):
+        model_path = os.path.join(MODELS_DIR, filename_safe)
+        
+    model_loaded = False
+    model = None
+    
+    if model_path:
+        try:
+            model = joblib.load(model_path)
+            model_loaded = True
+        except Exception as e:
+            st.error(f"File found but corrupted: {e}")
+    else:
+        # --- DEBUGGING DISPLAY ---
+        st.warning("⚠️ Model not found.")
+        with st.expander("🔍 Click for Troubleshooting Info", expanded=True):
+            st.markdown(f"**The app looked for these files:**\n1. `{filename_orig}`\n2. `{filename_safe}`")
+            
+            if os.path.exists(MODELS_DIR):
+                st.write(f"📂 **Files actually inside '{MODELS_DIR}' folder:**")
+                st.write(os.listdir(MODELS_DIR))
+            else:
+                st.error(f"❌ Critical: The folder `{MODELS_DIR}` does not exist.")
+
     # ==========================================
     # TAB 1: MAIN FORECAST DASHBOARD
     # ==========================================
     with tab1:
-        # --- ROBUST MODEL LOADING START ---
-        # 1. Construct potential filenames
-        # Option A: Original format (with parentheses)
-        filename_orig = f"{selected_c.replace(' ', '_').replace('/', '_')}_SARIMAX_model.joblib"
-        
-        # Option B: Safe format (no parentheses/commas - if you renamed them)
-        safe_c = selected_c.replace(' ', '_').replace('/', '_').replace('(', '').replace(')', '').replace(',', '')
-        filename_safe = f"{safe_c}_SARIMAX_model.joblib"
-        
-        # 2. Check which file actually exists
-        model_path = None
-        if os.path.exists(os.path.join(MODELS_DIR, filename_orig)):
-            model_path = os.path.join(MODELS_DIR, filename_orig)
-        elif os.path.exists(os.path.join(MODELS_DIR, filename_safe)):
-            model_path = os.path.join(MODELS_DIR, filename_safe)
-            
-        # 3. Load the model
-        model_loaded = False
-        model = None
-        
-        if model_path:
-            try:
-                model = joblib.load(model_path)
-                model_loaded = True
-            except Exception as e:
-                st.error(f"File found but corrupted: {e}")
-        else:
-            # --- DEBUGGING DISPLAY ---
-            st.warning("⚠️ Model not found.")
-            with st.expander("🔍 Click for Troubleshooting Info", expanded=True):
-                st.markdown(f"**The app looked for these files:**\n1. `{filename_orig}`\n2. `{filename_safe}`")
-                
-                if os.path.exists(MODELS_DIR):
-                    st.write(f"📂 **Files actually inside '{MODELS_DIR}' folder:**")
-                    st.write(os.listdir(MODELS_DIR))
-                else:
-                    st.error(f"❌ Critical: The folder `{MODELS_DIR}` does not exist.")
-        # --- ROBUST MODEL LOADING END ---
-
         if not model_loaded:
             st.info("Displaying historical data only (no forecast available).")
             # ROUNDED HISTORICAL CHART
