@@ -515,9 +515,16 @@ def main():
 
             # --- DATA TABLE ---
             with st.expander("📋 View Detailed Data Table"):
-                forecast_df = pd.DataFrame({"Date": dates, "Forecast": preds, "Lower": conf[:, 0], "Upper": conf[:, 1]})
+                # NEW LINE (Rounds to 2 decimal places)
+                forecast_df = pd.DataFrame({
+                    "Date": dates, 
+                    "Forecast": np.round(preds, 2), 
+                    "Lower": np.round(conf[:, 0], 2), 
+                    "Upper": np.round(conf[:, 1], 2)
+                })
+                
                 st.dataframe(forecast_df, use_container_width=True)
-                st.download_button("Download Report (CSV)", forecast_df.to_csv().encode('utf-8'), f"{selected_c}_forecast.csv", "text/csv")
+                st.download_button("Download Report (CSV)", forecast_df.to_csv(index=False).encode('utf-8'), f"{selected_c}_forecast.csv", "text/csv")
 
     # ==========================================
     # TAB 2: COMPARATIVE ANALYSIS
