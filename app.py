@@ -6,6 +6,7 @@ import json
 import plotly.graph_objects as go
 from sklearn.linear_model import LinearRegression
 import os
+import base64
 
 # ==========================================
 # 1. PAGE CONFIGURATION
@@ -28,18 +29,19 @@ st.markdown("""
         color: #e0e0e0;
     }
     
-    /* 2. Header Styling */
+    /* 2. Header Styling (Updated for Hero Visibility) */
     h1, h2, h3 {
         color: #ffffff !important;
         font-weight: 700;
+        text-shadow: 0px 4px 15px rgba(0,0,0,0.9); /* Shadow helps text pop over image */
     }
     p, span, div {
         color: #cfd8dc;
     }
     
-    /* 3. Metric Card Styling (Dark Cards) */
+    /* 3. Metric Card Styling (Dark Cards with slight transparency) */
     .metric-container {
-        background-color: #1f2937; /* Dark Slate */
+        background-color: rgba(31, 41, 55, 0.8); /* Semi-transparent */
         border: 1px solid #374151;
         border-radius: 10px;
         padding: 20px;
@@ -49,6 +51,7 @@ st.markdown("""
         display: flex;
         flex-direction: column;
         justify-content: center;
+        backdrop-filter: blur(5px);
         transition: transform 0.2s ease-in-out;
     }
     .metric-container:hover {
@@ -76,7 +79,7 @@ st.markdown("""
     /* 4. Risk Indicators (Vibrant for Dark Mode) */
     .risk-high { 
         color: #ff6b6b; 
-        background-color: rgba(255, 107, 107, 0.1); 
+        background-color: rgba(255, 107, 107, 0.15); 
         border: 1px solid #ff6b6b; 
         padding: 10px; 
         border-radius: 6px; 
@@ -88,7 +91,7 @@ st.markdown("""
     }
     .risk-moderate { 
         color: #feca57; 
-        background-color: rgba(254, 202, 87, 0.1); 
+        background-color: rgba(254, 202, 87, 0.15); 
         border: 1px solid #feca57; 
         padding: 10px; 
         border-radius: 6px; 
@@ -100,7 +103,7 @@ st.markdown("""
     }
     .risk-low { 
         color: #1dd1a1; 
-        background-color: rgba(29, 209, 161, 0.1); 
+        background-color: rgba(29, 209, 161, 0.15); 
         border: 1px solid #1dd1a1; 
         padding: 10px; 
         border-radius: 6px; 
@@ -173,10 +176,7 @@ st.markdown("""
 DATA_PATH = "wfp_food_prices_phl (main).csv"
 EXOG_PATH = "sarimax_final_training_data_complete_updated.csv"
 JSON_PATH = "dashboard_data.json"
-
-# CORRECT PATH SETUP
-# This works for both Windows and Linux (GitHub)
-MODELS_DIR = "models" 
+MODELS_DIR = "models"
 
 LINEAR_TREND_COLS = ['GWPI_Index', 'YoY_Inflation_Rate', 'Brent_Crude_USD', 'USGC_Diesel_USD']
 EXOG_COLS = [
@@ -276,21 +276,73 @@ def run_live_forecast(model, X_hist, steps):
         
     return forecast, conf_int, future_dates
 
+def set_header_background(image_path):
+    """
+    Sets a fading background image behind the header using CSS pseudo-elements.
+    Works with both local files and URLs.
+    """
+    if os.path.exists(image_path):
+        with open(image_path, "rb") as f:
+            data = f.read()
+        encoded = base64.b64encode(data).decode()
+        src = f"data:image/png;base64,{encoded}"
+    else:
+        src = image_path
+
+    # CSS to inject the background image into the main container
+    st.markdown(
+        f"""
+        <style>
+        .stApp::before {{
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 400px; /* Height of the Hero section */
+            background-image: url("{src}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: -1; /* Place behind text */
+            
+            /* Fading effect (Gradient Mask) */
+            mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 100%);
+            -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 100%);
+            
+            /* Dimming to ensure text readability */
+            opacity: 0.6;
+            filter: brightness(0.7);
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
 # ==========================================
 # 4. FRONTEND LAYOUT
 # ==========================================
 
 def main():
+    # --- SETUP HERO BACKGROUND ---
+    # URL to a high-quality food/agriculture image. 
+    # Use your own URL or local filename here.
+    BANNER_SOURCE = "banner.png"
+    
+    # Apply the hero background
+    set_header_background(BANNER_SOURCE)
+
     # --- HEADER ---
     st.markdown("""
-        <div>
-            <h1>Filipino Food Price Forecasting and Predictive Modeling using Time Series Regression</h1>
-            <p style='color:#7f8c8d; font-size:1.1rem; margin-top:5px;'>
-                <b>System Overview:</b> An AI-powered forecasting tool for monitoring food security. 
-    Select a commodity and a time horizon to generate predictive insights based on historical trends and economic indicators.
+        <div style="padding-top: 40px; padding-bottom: 20px;">
+            <h1 style="color: white; text-shadow: 0px 4px 10px rgba(0,0,0,0.9); font-size: 3rem;">
+                Filipino Food Price Forecasting <br>and Predictive Modeling
+            </h1>
+            <p style='color: #f0f0f0; font-size:1.3rem; font-weight: 500; text-shadow: 0px 2px 5px rgba(0,0,0,0.9); max-width: 800px;'>
+                <b>System Overview:</b> AI-powered forecasting for monitoring food security using Time Series Regression. 
+                Select a commodity and a time horizon to generate predictive insights based on historical trends and economic indicators.
             </p>
         </div>
-        <hr style='margin: 10px 0px 20px 0px; border-top: 1px solid #374151;'>
     """, unsafe_allow_html=True)
     
     df_prices, df_exog, meta_data = load_static_data()
@@ -454,7 +506,7 @@ def main():
             
             with col4:
                 st.markdown(f"""
-                <div class="{risk_class}">
+                <div class="{risk_class}" style="text-align:center; height:100%; display:flex; flex-direction:column; justify-content:center;">
                     <div style="font-weight:bold; font-size:0.8rem; margin-bottom:5px;">{risk_title}</div>
                     <div style="font-weight:900; font-size:1.1rem;">{risk_msg}</div>
                 </div>
