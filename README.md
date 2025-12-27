@@ -1,116 +1,237 @@
-FoodSight PH: Filipino Food Price Forecasting
-Predictive Modeling using Time Series Regression (SARIMAX) > A Decision Support System for Price Volatility Mitigation
+<div align="center">
 
-📖 Overview
-FoodSight PH is a machine learning-based dashboard designed to forecast the monthly retail prices of 20 essential agricultural commodities in the Philippines.
+# 🍽️ FoodSight PH  
+### **Filipino Food Price Forecasting Dashboard**  
+**Predictive Modeling using Time Series Regression (SARIMAX)**  
+*A Decision Support System for Food Price Volatility Mitigation*
 
-Addressing the issue of food price volatility, this system utilizes a Hybrid Time Series Strategy, dynamically selecting between SARIMAX (Seasonal AutoRegressive Integrated Moving Average with Exogenous Variables) and Pure SARIMA models. It integrates historical price data from the World Food Programme (WFP) with key economic indicators to provide accurate forecasts up to 2027.
+---
 
-Key Objectives
-Forecast: Predict future prices for staple foods (Rice, Meat, Vegetables, etc.).
+![Banner](banner.png)
 
-Analyze: Visualize seasonal trends and price cycles.
+---
 
-Support: Provide data-driven insights for policy-making and consumer awareness.
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)]()
+[![Streamlit](https://img.shields.io/badge/Streamlit-App-red.svg)]()
+[![License](https://img.shields.io/badge/License-Academic-green.svg)]()
+[![Status](https://img.shields.io/badge/Status-Research%20Project-orange.svg)]()
 
-🏗️ Architecture & Methodology
-The system relies on historical data spanning from 2000 to 2025. It uses the following exogenous variables to improve prediction accuracy:
+</div>
 
-GWPI (General Wholesale Price Index)
+---
 
-Inflation Rate (Year-on-Year)
+## 📖 Overview
+**FoodSight PH** is a machine learning–powered decision support system designed to **forecast the monthly retail prices** of 20 essential agricultural commodities in the Philippines.
 
-Global Fuel Prices (Brent Crude & Diesel)
+To address food price volatility, the system implements a **Hybrid Time Series Strategy** that dynamically selects between:
 
-Commodities Tracked
-The model tracks 20 specific items, including:
+- **SARIMAX** (Seasonal AutoRegressive Integrated Moving Average with Exogenous Variables)
+- **Pure SARIMA** models
 
-Cereals: Rice (Regular/Milled), Maize (White/Yellow)
+It integrates historical market data from the WFP with key economic indicators to provide accurate price forecasts **up to 2027**, empowering policymakers, consumers, and researchers.
 
-Meats: Chicken, Pork, Beef
+---
 
-Vegetables: Onions (Red), Garlic, Cabbage, Tomatoes, Potatoes
+## 🎯 Key Objectives
+- **Forecast:** Predict future prices for essential food commodities  
+- **Analyze:** Visualize seasonal trends and price cycles  
+- **Support:** Provide data-driven insights for market stability and policy-making  
 
-Fruits: Bananas (Lakatan/Saba), Mangoes
+---
 
-Others: Eggs, Sugar, Coconut, Fish (Bangus/Tilapia)
+## 🧠 Modeling Workflow (High-Level Overview)
 
-📂 Project Structure
-Plaintext
+```
+            +---------------------------+
+            |  Historical Price Data    |
+            |    (2000–2025)            |
+            +-------------+-------------+
+                          |
+                          v
+           +-------------------------------+
+           |  Feature Integration           |
+           |  • GWPI                        |
+           |  • Inflation Rate (YoY)        |
+           |  • Global Fuel Prices          |
+           +-------------------------------+
+                          |
+                          v
+     +------------------------------------------------+
+     |  Hybrid Time Series Selection Mechanism        |
+     |  • SARIMAX (with exogenous variables)          |
+     |  • SARIMA (if SARIMAX underperforms)           |
+     +------------------------------------------------+
+                          |
+                          v
+               +-----------------------+
+               |   Model Training      |
+               |  (Auto-tuning via     |
+               |   Auto-ARIMA, AIC,    |
+               |   MAE/RMSE/MAPE)      |
+               +-----------+-----------+
+                           |
+                           v
+              +-------------------------+
+              |  Forecast Generation     |
+              |     (2025–2027)          |
+              +-------------+-----------+
+                            |
+                            v
+               +--------------------------+
+               |   Streamlit Dashboard     |
+               | Interactive Visualization |
+               +--------------------------+
+```
 
+---
+
+## 🥗 Commodities Tracked (20 Items)
+
+### **Cereals**
+- Rice (Regular, Milled)  
+- Maize (White, Yellow)
+
+### **Meats**
+- Chicken  
+- Pork  
+- Beef  
+
+### **Vegetables**
+- Red Onions, Garlic  
+- Cabbage, Tomatoes, Potatoes  
+
+### **Fruits**
+- Bananas (Lakatan, Saba)  
+- Mangoes  
+
+### **Others**
+- Eggs  
+- Sugar  
+- Coconut  
+- Fish (Bangus, Tilapia)
+
+---
+
+## 🏗️ Architecture & Methodology
+The model uses historical data from **2000–2025**, enhanced by the following **exogenous variables**:
+
+- **GWPI – General Wholesale Price Index**
+- **Inflation Rate – Year-on-Year Basis**
+- **Global Fuel Prices – Brent Crude Oil, Diesel**
+
+The **SARIMAX model** is the primary predictor, and falls back to SARIMA when exogenous regression does not improve performance.
+
+---
+
+## 🖼️ Dashboard Preview  
+> *(Optional — replace image filename if needed)*  
+![Dashboard Screenshot](preview.png)
+
+---
+
+## 📂 Project Structure
+
+```
 FoodSight PH/
 │
-├── models/                       # Pre-trained SARIMAX models (.joblib)
+├── models/                     # Pre-trained SARIMAX models (.joblib)
 │   ├── Bananas_(lakatan)_SARIMAX_model.joblib
-│   ├── Rice_(regular,_milled)_SARIMAX_model.joblib
-│   └── ... (20 total models)
+│   ├── Rice(regular,_milled)_SARIMAX_model.joblib
+│   └── ...                     (20 total models)
 │
-├── app.py                        # Main Streamlit Dashboard application
-├── dashboard_data.json           # Cached forecast data for fast loading
-├── sarimax_final_training_data_complete_updated.csv  # Training dataset with economic indicators
-├── wfp_food_prices_phl (main).csv # Raw WFP price dataset
-├── requirements.txt              # Python dependencies
-├── banner.png                    # Project Banner image
-└── README.md                     # Project Documentation
-🚀 Installation & Usage
-Prerequisites
-Python 3.8+
+├── app.py                      # Main Streamlit dashboard application
+├── dashboard_data.json         # Cached forecast data (faster loading)
+│
+├── sarimax_final_training_data_complete_updated.csv  # Full training dataset
+├── wfp_food_prices_phl (main).csv                   # Raw WFP dataset
+│
+├── requirements.txt            # Python dependencies
+├── banner.png                  # Project banner image
+├── preview.png                 # Dashboard preview image (optional)
+└── README.md                   # Project documentation
+```
 
-Git
+---
 
-Steps
-Clone the repository
+## 🚀 Installation & Usage
 
-Bash
+### **Prerequisites**
+- Python **3.8+**
+- Git installed
 
+---
+
+### **1. Clone the Repository**
+```bash
 git clone https://github.com/yourusername/foodsight-ph.git
 cd foodsight-ph
-Install dependencies It is recommended to use a virtual environment.
+```
 
-Bash
+### **2. Install Dependencies**
+Using a virtual environment is recommended.
 
+```bash
 pip install -r requirements.txt
-Run the Dashboard
+```
 
-Bash
-
+### **3. Run the Streamlit Dashboard**
+```bash
 streamlit run app.py
-Access the App The application will open automatically in your browser at http://localhost:8501.
+```
 
-🛠️ Technologies Used
-Frontend: Streamlit (Web Framework)
+### **4. Access the App**
+The application opens automatically.  
+Or visit manually:
 
-Data Processing: Pandas, NumPy
+🔗 **http://localhost:8501**
 
-Visualization: Plotly (Interactive Charts)
+---
 
-Machine Learning:
+## 🛠️ Technologies Used
 
-statsmodels (SARIMAX/ARIMA implementation)
+### Frontend
+- **Streamlit**
 
-pmdarima (Auto-ARIMA for parameter tuning)
+### Data Processing
+- **Pandas**
+- **NumPy**
 
-scikit-learn (Metrics: MAE, RMSE, MAPE)
+### Visualization
+- **Plotly** (Interactive Charts)
 
-joblib (Model serialization)
+### Machine Learning / Forecasting
+- **statsmodels** – SARIMAX, ARIMA
+- **pmdarima** – Auto-ARIMA parameter tuning
+- **scikit-learn** – Performance metrics (MAE, RMSE, MAPE)
+- **joblib** – Model serialization
 
-📊 Data Sources
-This project utilizes open data from:
+---
 
-World Food Programme (WFP): Global Food Prices Database (Philippines).
+## 📊 Data Sources
+- **World Food Programme (WFP)** — Global Food Prices Database (PHL)
+- **Philippine Statistics Authority (PSA)** — CPI, Inflation
+- **IndexMundi / World Bank** — Global fuel prices
 
-Philippine Statistics Authority (PSA): CPI and Inflation rates.
+---
 
-IndexMundi / World Bank: Global fuel prices.
+## 👥 Authors
+**Department of Computer Engineering**  
+**University of Science and Technology of Southern Philippines (USTP)**
 
-👥 Authors
-Department of Computer Engineering University of Science and Technology of Southern Philippines (USTP)
+- Reggie M. Abrera
+- Vhon Lorence C. Cabiluna
+- Joebert E. Zarate
 
-Reggie M. Abrera
+---
 
-Vhon Lorence C. Cabiluna
+## 📜 License
+This project is intended for **academic and educational purposes only**.  
+© 2025 FoodSight PH Team
 
-Joebert E. Zarate
+---
 
-📜 License
-This project is intended for academic and educational purposes. Copyright © 2025 FoodSight PH Team.
+<div align="center">
+
+⭐ **If you find this project useful, consider giving it a star on GitHub!**
+
+</div>
