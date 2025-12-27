@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🍽️ FoodSight PH  
+# FoodSight PH  
 ### **Filipino Food Price Forecasting Dashboard**  
 **Predictive Modeling using Time Series Regression (SARIMAX)**  
 *A Decision Support System for Food Price Volatility Mitigation*
@@ -20,7 +20,7 @@
 
 ---
 
-## 📖 Overview
+## Overview
 **FoodSight PH** is a machine learning–powered decision support system designed to **forecast the monthly retail prices** of 20 essential agricultural commodities in the Philippines.
 
 To address food price volatility, the system implements a **Hybrid Time Series Strategy** that dynamically selects between:
@@ -32,14 +32,14 @@ It integrates historical market data from the WFP with key economic indicators t
 
 ---
 
-## 🎯 Key Objectives
+## Key Objectives
 - **Forecast:** Predict future prices for essential food commodities  
 - **Analyze:** Visualize seasonal trends and price cycles  
 - **Support:** Provide data-driven insights for market stability and policy-making  
 
 ---
 
-## 🧠 Modeling Workflow (High-Level Overview)
+## Modeling Workflow (High-Level Overview)
 
 ```
             +---------------------------+
@@ -112,7 +112,7 @@ It integrates historical market data from the WFP with key economic indicators t
 
 ---
 
-## 🏗️ Architecture & Methodology
+## Architecture & Methodology
 The model uses historical data from **2000–2025**, enhanced by the following **exogenous variables**:
 
 - **GWPI – General Wholesale Price Index**
@@ -123,13 +123,7 @@ The **SARIMAX model** is the primary predictor, and falls back to SARIMA when ex
 
 ---
 
-## 🖼️ Dashboard Preview  
-> *(Optional — replace image filename if needed)*  
-![Dashboard Screenshot](preview.png)
-
----
-
-## 📂 Project Structure
+## Project Structure
 
 ```
 FoodSight PH/
@@ -153,7 +147,7 @@ FoodSight PH/
 
 ---
 
-## 🚀 Installation & Usage
+## Installation & Usage
 
 ### **Prerequisites**
 - Python **3.8+**
@@ -187,7 +181,7 @@ Or visit manually:
 
 ---
 
-## 🛠️ Technologies Used
+## Technologies Used
 
 ### Frontend
 - **Streamlit**
@@ -207,14 +201,14 @@ Or visit manually:
 
 ---
 
-## 📊 Data Sources
+## Data Sources
 - **World Food Programme (WFP)** — Global Food Prices Database (PHL)
 - **Philippine Statistics Authority (PSA)** — CPI, Inflation
 - **IndexMundi / World Bank** — Global fuel prices
 
 ---
 
-## 👥 Authors
+## Authors
 **Department of Computer Engineering**  
 **University of Science and Technology of Southern Philippines (USTP)**
 
@@ -224,14 +218,8 @@ Or visit manually:
 
 ---
 
-## 📜 License
+## License
 This project is intended for **academic and educational purposes only**.  
 © 2025 FoodSight PH Team
 
 ---
-
-<div align="center">
-
-⭐ **If you find this project useful, consider giving it a star on GitHub!**
-
-</div>
